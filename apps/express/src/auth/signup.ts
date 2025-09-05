@@ -8,20 +8,27 @@ const signUpRouter: Router = express.Router()
 
 async function signUpRouterFunction(req: Request, res: Response){
 
-    const password = req.body.password ;
     const email = req.body.email ;
+    const password = req.body.password;
 
-    const exists = false// check if user already exists PrismaClient 
+    const exists = await prismaClient.user.findFirst({
+        where:{
+            email: email
+        }
+    })
 
     if(exists){
         res.send("Email with this username/ email already found !")
     }
     
     if(!exists){
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+        
         const createUser = await prismaClient.user.create({
             data:{
                 email: email,
-                password: password
+                password: hashedPassword
             }
         })
 
